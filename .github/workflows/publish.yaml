@@ -22,8 +22,16 @@ jobs:
       id-token: write
     env:
       DOTNET_NOLOGO: true
+      NUGET_USER: ${{ vars.NUGET_USER || secrets.NUGET_USER }}
 
     steps:
+      - name: Check NuGet publishing configuration
+        shell: pwsh
+        run: |
+          if ([string]::IsNullOrWhiteSpace($env:NUGET_USER)) {
+            throw 'Set the repository Actions variable NUGET_USER to your NuGet.org profile username (Settings > Secrets and variables > Actions > Variables). An Actions secret named NUGET_USER is also supported.'
+          }
+
       - name: Check out repo
         uses: actions/checkout@v7
         with:
@@ -45,7 +53,7 @@ jobs:
         uses: NuGet/login@v1
         id: nuget-login
         with:
-          user: ${{ secrets.NUGET_USER }}
+          user: ${{ env.NUGET_USER }}
 
       - name: Publish to NuGet.org
         shell: pwsh

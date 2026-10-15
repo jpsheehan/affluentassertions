@@ -37,8 +37,10 @@ and public API approval checks, before publishing `AffluentAssertions` to NuGet.
 The assembly name and namespaces remain `FluentAssertions` for compatibility.
 
 NuGet.org publishing uses [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing).
-Set the repository Actions secret `NUGET_USER` to the NuGet.org profile username that owns the trusted
-publishing policy (not an email address). The policy should trust owner `jpsheehan`, repository
+Set the repository Actions variable `NUGET_USER` under **Settings > Secrets and variables > Actions > Variables**
+to the NuGet.org profile username that owns the trusted publishing policy (not an email address).
+An Actions secret named `NUGET_USER` is also supported; the variable takes precedence if both are set.
+The workflow checks this setting before building. The policy should trust owner `jpsheehan`, repository
 `affluentassertions`, workflow file `publish.yaml`, and package `AffluentAssertions`. Leave the policy's
 environment field empty because this workflow does not use a GitHub Actions environment.
 The workflow exchanges a GitHub OIDC token for a temporary publishing key immediately before pushing;
