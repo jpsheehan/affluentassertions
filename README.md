@@ -14,6 +14,8 @@
 [![open issues](https://img.shields.io/github/issues/fluentassertions/fluentassertions)](https://github.com/fluentassertions/fluentassertions/issues)
 ![](https://img.shields.io/badge/release%20strategy-githubflow-orange.svg)
 
+This repo pins FluentAssertions to the latest Apache 2.0 licensed version.
+
 A very extensive set of extension methods that allow you to more naturally specify the expected outcome of a TDD or BDD-style unit tests. Targets .NET Framework 4.7, as well as .NET 6, .NET Standard 2.0 and 2.1.
 
 See https://www.fluentassertions.com for [background information](https://fluentassertions.com/about/), [usage documentation](https://fluentassertions.com/introduction), an [extensibility guide](https://fluentassertions.com/extensibility/), support information and more [tips & tricks](https://fluentassertions.com/tips/).
@@ -34,11 +36,19 @@ It builds and tests through NUKE's `Pack` target, including unit tests, test fra
 and public API approval checks, before publishing `AffluentAssertions` to NuGet.org and GitHub Packages.
 The assembly name and namespaces remain `FluentAssertions` for compatibility.
 
-Configure the repository Actions secret `NUGET_API_KEY` with a NuGet.org API key permitted to push
-`AffluentAssertions`. GitHub Packages uses the workflow's `GITHUB_TOKEN` with `packages: write` permission.
-Package versions come from the existing GitVersion configuration and Git history (see [GitVersion.yml](GitVersion.yml));
-both feeds skip versions that have already been published. To release a specific version, tag the release
-commit with its semantic version before pushing the commit and tag to `release`.
+NuGet.org publishing uses [trusted publishing](https://learn.microsoft.com/en-us/nuget/nuget-org/trusted-publishing).
+Set the repository Actions secret `NUGET_USER` to the NuGet.org profile username that owns the trusted
+publishing policy (not an email address). The policy should trust owner `jpsheehan`, repository
+`affluentassertions`, workflow file `publish.yaml`, and package `AffluentAssertions`. Leave the policy's
+environment field empty because this workflow does not use a GitHub Actions environment.
+The workflow exchanges a GitHub OIDC token for a temporary publishing key immediately before pushing;
+no stored `NUGET_API_KEY` secret is needed. GitHub Packages uses the workflow's `GITHUB_TOKEN`
+with `packages: write` permission.
+Set the exact package version in [Version.props](Version.props) before pushing `release`, for example
+`<Version>7.2.1</Version>` or `<Version>7.3.0-rc.1</Version>`. This file controls package and assembly
+version metadata for both local builds and CI. Tags, branch names, and CI run numbers do not change it.
+It starts at `7.2.0`, matching the latest ancestral upstream tag. Increment it for each new release;
+both feeds skip versions that have already been published.
 The regular build workflow validates changes without publishing.
 
 # What are these Approval.Tests?

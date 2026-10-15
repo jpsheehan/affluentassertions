@@ -10,7 +10,6 @@ using Nuke.Common.IO;
 using Nuke.Common.ProjectModel;
 using Nuke.Common.Tooling;
 using Nuke.Common.Tools.DotNet;
-using Nuke.Common.Tools.GitVersion;
 using Nuke.Common.Tools.ReportGenerator;
 using Nuke.Common.Tools.Xunit;
 using Nuke.Common.Utilities;
@@ -37,8 +36,6 @@ class Build : NukeBuild
 
     string BranchSpec => GitHubActions?.Ref;
 
-    string BuildNumber => GitHubActions?.RunNumber.ToString();
-
     string PullRequestBase => GitHubActions?.BaseRef;
 
     [Parameter("Use this parameter if you encounter build problems in any way, " +
@@ -51,9 +48,6 @@ class Build : NukeBuild
 
     [Solution(GenerateProjects = true)]
     readonly Solution Solution;
-
-    [GitVersion(Framework = "net6.0")]
-    readonly GitVersion GitVersion;
 
     [GitRepository]
     readonly GitRepository GitRepository;
@@ -75,6 +69,8 @@ class Build : NukeBuild
 
     string SemVer;
 
+    string PackageVersion => XmlTasks.XmlPeek(RootDirectory / "Version.props", "/Project/PropertyGroup/Version").Single();
+
     Target Clean => _ => _
         .OnlyWhenDynamic(() => RunAllTargets || HasSourceChanges)
         .Executes(() =>
@@ -87,20 +83,9 @@ class Build : NukeBuild
         .OnlyWhenDynamic(() => RunAllTargets || HasSourceChanges)
         .Executes(() =>
         {
-            SemVer = GitVersion.SemVer;
-            if (IsPullRequest)
-            {
-                Information(
-                    "Branch spec {branchspec} is a pull request. Adding build number {buildnumber}",
-                    BranchSpec, BuildNumber);
-
-                SemVer = string.Join('.', GitVersion.SemVer.Split('.').Take(3).Union(new[] { BuildNumber }));
-            }
-
+            SemVer = PackageVersion;
             Information("SemVer = {semver}", SemVer);
         });
-
-    bool IsPullRequest => GitHubActions?.IsPullRequest ?? false;
 
     Target Restore => _ => _
         .DependsOn(Clean)
@@ -118,9 +103,7 @@ class Build : NukeBuild
         .OnlyWhenDynamic(() => RunAllTargets || HasSourceChanges)
         .Executes(() =>
         {
-            ReportSummary(s => s
-                .WhenNotNull(GitVersion, (_, o) => _
-                    .AddPair("Version", o.SemVer)));
+            ReportSummary(s => s.AddPair("Version", PackageVersion));
 
             DotNetBuild(s => s
                 .SetProjectFile(Solution)
@@ -130,9 +113,7 @@ class Build : NukeBuild
                 )
                 .EnableNoLogo()
                 .EnableNoRestore()
-                .SetAssemblyVersion(GitVersion.AssemblySemVer)
-                .SetFileVersion(GitVersion.AssemblySemFileVer)
-                .SetInformationalVersion(GitVersion.InformationalVersion));
+                .SetVersion(PackageVersion));
         });
 
     Target ApiChecks => _ => _
