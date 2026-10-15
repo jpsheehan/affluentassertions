@@ -20,12 +20,10 @@ jobs:
       with:
         dotnet-version: |
           6.0.x
-          7.0.x
+          8.0.x
 
     - name: Run NUKE
-      run: ./build.ps1
-      env:
-        NuGetApiKey: ${{ secrets.NUGETAPIKEY }}
+      run: ./build.ps1 --target SpellCheck Pack
 
     - name: Check for 'lcov.info' existence
       id: check_files

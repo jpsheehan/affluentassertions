@@ -26,6 +26,21 @@ Originally authored by Dennis Doomen with Jonas Nyrup as the productive side-kic
 # How do I build this?
 Install Visual Studio 2022 17.0+ or JetBrains Rider 2021.3 as well as the Build Tools 2022 (including the Universal Windows Platform build tools). You will also need to have .NET Framework 4.7 SDK and .NET 7.0 SDK installed. Check [global.json](global.json) for the current minimum required version.
 
+# Publishing this fork
+
+Keep `support-7.0` as the branch for syncing changes from upstream. When ready to publish,
+merge `support-7.0` into `release` and push `release` to run the [publish workflow](.github/workflows/publish.yaml).
+It builds and tests through NUKE's `Pack` target, including unit tests, test framework integration tests,
+and public API approval checks, before publishing `AffluentAssertions` to NuGet.org and GitHub Packages.
+The assembly name and namespaces remain `FluentAssertions` for compatibility.
+
+Configure the repository Actions secret `NUGET_API_KEY` with a NuGet.org API key permitted to push
+`AffluentAssertions`. GitHub Packages uses the workflow's `GITHUB_TOKEN` with `packages: write` permission.
+Package versions come from the existing GitVersion configuration and Git history (see [GitVersion.yml](GitVersion.yml));
+both feeds skip versions that have already been published. To release a specific version, tag the release
+commit with its semantic version before pushing the commit and tag to `release`.
+The regular build workflow validates changes without publishing.
+
 # What are these Approval.Tests?
 This is a special set of tests that use the [Verify](https://github.com/VerifyTests/Verify) project to verify whether you've introduced any breaking changes in the public API of the library.
 

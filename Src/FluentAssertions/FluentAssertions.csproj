@@ -15,6 +15,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="Package info">
+    <PackageId>AffluentAssertions</PackageId>
     <Authors>Dennis Doomen;Jonas Nyrup</Authors>
     <PackageDescription>
       A very extensive set of extension methods that allow you to more naturally specify the expected outcome of a TDD or
@@ -23,13 +24,13 @@
 
       Supported by InfoSupport B.V.
     </PackageDescription>
-    <PackageProjectUrl>https://www.fluentassertions.com</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/fluentassertions/fluentassertions</RepositoryUrl>
+    <PackageProjectUrl>https://github.com/jpsheehan/affluentassertions</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/jpsheehan/affluentassertions</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <PackageTags>MSTest2;xUnit;NUnit;MSpec;TUnit;TDD;BDD;Fluent;netstandard;uwp</PackageTags>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
     <PackageIcon>FluentAssertions.png</PackageIcon>
-    <PackageReleaseNotes>See https://fluentassertions.com/releases/</PackageReleaseNotes>
+    <PackageReleaseNotes>See https://github.com/jpsheehan/affluentassertions/releases</PackageReleaseNotes>
     <Copyright>Copyright Dennis Doomen 2010-$([System.DateTime]::Now.ToString(yyyy))</Copyright>
   </PropertyGroup>
 
