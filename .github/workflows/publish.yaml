@@ -49,6 +49,19 @@ jobs:
       - name: Build, test and pack
         run: ./build.ps1 --target Pack
 
+      - name: Locate package
+        id: package
+        shell: pwsh
+        run: |
+          $artifactDirectory = Join-Path $env:GITHUB_WORKSPACE 'Artifacts'
+          $packages = @(Get-ChildItem -LiteralPath $artifactDirectory -Filter 'AffluentAssertions.*.nupkg' -File -ErrorAction SilentlyContinue)
+          if ($packages.Count -ne 1) {
+            Get-ChildItem -LiteralPath $env:GITHUB_WORKSPACE -Filter '*.nupkg' -Recurse -File | Select-Object -ExpandProperty FullName
+            throw "Expected one AffluentAssertions package in '$artifactDirectory', found $($packages.Count). Check the Pack target output above."
+          }
+          Write-Host "Publishing package: $($packages[0].FullName)"
+          "path=$($packages[0].FullName)" >> $env:GITHUB_OUTPUT
+
       - name: Log in to NuGet.org with trusted publishing
         uses: NuGet/login@v1
         id: nuget-login
@@ -59,11 +72,13 @@ jobs:
         shell: pwsh
         env:
           NUGET_API_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
-        run: dotnet nuget push "Artifacts/AffluentAssertions.*.nupkg" --api-key "$env:NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+          PACKAGE_PATH: ${{ steps.package.outputs.path }}
+        run: dotnet nuget push "$env:PACKAGE_PATH" --api-key "$env:NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
 
       - name: Publish to GitHub Packages
         shell: pwsh
         env:
           NUGET_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           PACKAGE_OWNER: ${{ github.repository_owner }}
-        run: dotnet nuget push "Artifacts/AffluentAssertions.*.nupkg" --api-key "$env:NUGET_AUTH_TOKEN" --source "https://nuget.pkg.github.com/$env:PACKAGE_OWNER/index.json" --skip-duplicate
+          PACKAGE_PATH: ${{ steps.package.outputs.path }}
+        run: dotnet nuget push "$env:PACKAGE_PATH" --api-key "$env:NUGET_AUTH_TOKEN" --source "https://nuget.pkg.github.com/$env:PACKAGE_OWNER/index.json" --skip-duplicate
